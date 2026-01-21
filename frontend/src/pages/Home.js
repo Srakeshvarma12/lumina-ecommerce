@@ -31,7 +31,7 @@ const Home = () => {
   };
 
   const formatCategory = (cat) =>
-    cat.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  String(cat).replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   return (
     <>
@@ -80,12 +80,12 @@ const Home = () => {
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
             {categories.map((cat) => (
               <div
-                key={cat}
-                onClick={() => navigate(`/products?category=${cat}`)}
+                key={cat.id}
+                onClick={() => navigate(`/products?category=${cat.name}`)}
                 className="cursor-pointer border rounded-2xl p-8 text-center hover:shadow-lg transition"
               >
                 <p className="font-semibold text-lg">
-                  {formatCategory(cat)}
+                  {formatCategory(cat.name)}
                 </p>
               </div>
             ))}
