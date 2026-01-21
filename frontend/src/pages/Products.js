@@ -179,9 +179,9 @@ const Products = () => {
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
             >
               <option value="">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
                 </option>
               ))}
             </select>
