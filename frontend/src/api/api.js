@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://lumina-ecommerce-tuil.onrender.com/api";
 
 export const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
