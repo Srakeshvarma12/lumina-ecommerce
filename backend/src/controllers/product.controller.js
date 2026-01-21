@@ -97,19 +97,19 @@ const getProductByIdController = async (req, res) => {
 const getCategoriesController = async (req, res) => {
   try {
     const result = await pool.query(`
-  SELECT id, name
-  FROM categories
-  ORDER BY name
-`);
+      SELECT id, name
+      FROM categories
+      ORDER BY name
+    `);
 
-res.json({ categories: result.rows });
-
+    res.json({ categories: result.rows });
 
   } catch (err) {
     console.error("Categories error:", err);
     res.status(500).json({ error: "Failed to fetch categories" });
   }
 };
+
 
 /* ========== UPDATE / DELETE ========== */
 

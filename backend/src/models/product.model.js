@@ -8,7 +8,7 @@ const createProduct = async (
   price,
   stock,
   imageUrl,
-  category_id,
+  categoryId,
   isFeatured,
   userId
 ) => {
@@ -17,7 +17,7 @@ const createProduct = async (
      (name, description, price, stock, image_url, category_id, is_featured, created_by)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
      RETURNING *`,
-    [name, description, price, stock, imageUrl, category_id, isFeatured, userId]
+    [name, description, price, stock, imageUrl, categoryId, isFeatured, userId]
   );
 
   return result.rows[0];
@@ -112,7 +112,7 @@ const updateProduct = async (
   price,
   stock,
   imageUrl,
-  category_id,
+  categoryId,
   isFeatured
 ) => {
   const result = await pool.query(
@@ -126,7 +126,7 @@ const updateProduct = async (
       is_featured=$7
      WHERE id=$8
      RETURNING *`,
-    [name, description, price, stock, imageUrl, category_id, isFeatured, id]
+    [name, description, price, stock, imageUrl, categoryId, isFeatured, id]
   );
 
   return result.rows[0];
@@ -145,7 +145,7 @@ const getRelatedProducts = async (category, productId) => {
     SELECT p.id, p.name, p.price, p.image_url, c.name AS category
     FROM products p
     JOIN categories c ON p.category_id = c.id
-    WHERE LOWER(c.name) = LOWER($1) AND p.id != $2
+    WHERE c.name = $1 AND p.id != $2
     ORDER BY RANDOM()
     LIMIT 4
   `, [category, productId]);
