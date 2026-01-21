@@ -34,7 +34,6 @@ const getAllProducts = async () => {
       p.price,
       p.stock,
       p.image_url,
-      p.created_at,
       c.name AS category
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
@@ -46,15 +45,7 @@ const getAllProducts = async () => {
 
 const getFeaturedProducts = async () => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.description,
-      p.price,
-      p.stock,
-      p.image_url,
-      p.created_at,
-      c.name AS category
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS category
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.is_featured = true
@@ -67,15 +58,7 @@ const getFeaturedProducts = async () => {
 
 const getLatestProducts = async () => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.description,
-      p.price,
-      p.stock,
-      p.image_url,
-      p.created_at,
-      c.name AS category
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS category
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     ORDER BY p.created_at DESC
@@ -85,37 +68,21 @@ const getLatestProducts = async () => {
   return result.rows;
 };
 
-const getProductsByCategory = async (categoryName) => {
+const getProductsByCategory = async (category) => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.description,
-      p.price,
-      p.stock,
-      p.image_url,
-      p.created_at,
-      c.name AS category
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS category
     FROM products p
     JOIN categories c ON p.category_id = c.id
     WHERE LOWER(c.name) = LOWER($1)
     ORDER BY p.created_at DESC
-  `, [categoryName]);
+  `, [category]);
 
   return result.rows;
 };
 
 const searchProducts = async (query) => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.description,
-      p.price,
-      p.stock,
-      p.image_url,
-      p.created_at,
-      c.name AS category
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS category
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.name ILIKE $1 OR p.description ILIKE $1
@@ -127,15 +94,7 @@ const searchProducts = async (query) => {
 
 const getProductById = async (id) => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.description,
-      p.price,
-      p.stock,
-      p.image_url,
-      p.created_at,
-      c.name AS category
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.image_url, c.name AS category
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.id
     WHERE p.id = $1
@@ -181,31 +140,15 @@ const deleteProduct = async (id) => {
   return result.rows[0];
 };
 
-/* ================= STOCK ================= */
-
-const getProductStockById = async (id) => {
-  const result = await pool.query(
-    `SELECT stock FROM products WHERE id=$1`,
-    [id]
-  );
-  return result.rows[0];
-};
-
-const getRelatedProducts = async (categoryName, productId) => {
+const getRelatedProducts = async (category, productId) => {
   const result = await pool.query(`
-    SELECT 
-      p.id,
-      p.name,
-      p.price,
-      p.image_url,
-      c.name AS category
+    SELECT p.id, p.name, p.price, p.image_url, c.name AS category
     FROM products p
     JOIN categories c ON p.category_id = c.id
-    WHERE LOWER(c.name) = LOWER($1)
-      AND p.id != $2
+    WHERE LOWER(c.name) = LOWER($1) AND p.id != $2
     ORDER BY RANDOM()
     LIMIT 4
-  `, [categoryName, productId]);
+  `, [category, productId]);
 
   return result.rows;
 };
@@ -220,6 +163,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
-  getProductStockById,
   getRelatedProducts,
 };

@@ -121,7 +121,7 @@ const updateProductController = async (req, res) => {
     req.body.price,
     req.body.stock,
     req.body.image_url,
-    req.body.category,
+    req.body.category_id,
     req.body.is_featured
   );
 
