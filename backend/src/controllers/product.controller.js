@@ -17,15 +17,8 @@ const {
 
 const createProductController = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      price,
-      stock,
-      image_url,
-      category,
-      is_featured
-    } = req.body;
+    const { name, description, price, stock, image_url, category_id, is_featured } = req.body;
+
 
     const product = await createProduct(
       name,
@@ -33,7 +26,7 @@ const createProductController = async (req, res) => {
       price,
       stock,
       image_url,
-      category || "General",
+      category_id,
       is_featured || false,
       req.user.id
     );
@@ -104,13 +97,13 @@ const getProductByIdController = async (req, res) => {
 const getCategoriesController = async (req, res) => {
   try {
     const result = await pool.query(`
-  SELECT DISTINCT LOWER(TRIM(category)) AS category
-  FROM products
-  WHERE category IS NOT NULL
-  ORDER BY category
+  SELECT id, name
+  FROM categories
+  ORDER BY name
 `);
 
-    res.json({ categories: result.rows.map(r => r.category) });
+res.json({ categories: result.rows });
+
 
   } catch (err) {
     console.error("Categories error:", err);

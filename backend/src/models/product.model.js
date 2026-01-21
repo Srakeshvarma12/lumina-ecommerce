@@ -8,16 +8,16 @@ const createProduct = async (
   price,
   stock,
   imageUrl,
-  category,
+  category_id,
   isFeatured,
   userId
 ) => {
   const result = await pool.query(
     `INSERT INTO products 
-     (name, description, price, stock, image_url, category, is_featured, created_by)
+     (name, description, price, stock, image_url, category_id, is_featured, created_by)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
      RETURNING *`,
-    [name, description, price, stock, imageUrl, category, isFeatured, userId]
+    [name, description, price, stock, imageUrl, category_id, isFeatured, userId]
   );
 
   return result.rows[0];
@@ -26,66 +26,120 @@ const createProduct = async (
 /* ================= READ ================= */
 
 const getAllProducts = async () => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     ORDER BY created_at DESC`
-  );
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    ORDER BY p.created_at DESC
+  `);
+
   return result.rows;
 };
 
 const getFeaturedProducts = async () => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     WHERE is_featured = true
-     ORDER BY created_at DESC
-     LIMIT 8`
-  );
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.is_featured = true
+    ORDER BY p.created_at DESC
+    LIMIT 8
+  `);
+
   return result.rows;
 };
 
 const getLatestProducts = async () => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     ORDER BY created_at DESC
-     LIMIT 12`
-  );
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    ORDER BY p.created_at DESC
+    LIMIT 12
+  `);
+
   return result.rows;
 };
 
-const getProductsByCategory = async (category) => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     WHERE LOWER(category) = LOWER($1)
-     ORDER BY created_at DESC`,
-    [category]
-  );
+const getProductsByCategory = async (categoryName) => {
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    JOIN categories c ON p.category_id = c.id
+    WHERE LOWER(c.name) = LOWER($1)
+    ORDER BY p.created_at DESC
+  `, [categoryName]);
 
   return result.rows;
 };
 
 const searchProducts = async (query) => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     WHERE name ILIKE $1 OR description ILIKE $1
-     ORDER BY created_at DESC`,
-    [`%${query}%`]
-  );
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.name ILIKE $1 OR p.description ILIKE $1
+    ORDER BY p.created_at DESC
+  `, [`%${query}%`]);
 
   return result.rows;
 };
 
 const getProductById = async (id) => {
-  const result = await pool.query(
-    `SELECT id, name, description, price, stock, image_url, category
-     FROM products
-     WHERE id = $1`,
-    [id]
-  );
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.description,
+      p.price,
+      p.stock,
+      p.image_url,
+      p.created_at,
+      c.name AS category
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    WHERE p.id = $1
+  `, [id]);
 
   return result.rows[0];
 };
@@ -99,7 +153,7 @@ const updateProduct = async (
   price,
   stock,
   imageUrl,
-  category,
+  category_id,
   isFeatured
 ) => {
   const result = await pool.query(
@@ -109,11 +163,11 @@ const updateProduct = async (
       price=$3,
       stock=$4,
       image_url=$5,
-      category=$6,
+      category_id=$6,
       is_featured=$7
      WHERE id=$8
      RETURNING *`,
-    [name, description, price, stock, imageUrl, category, isFeatured, id]
+    [name, description, price, stock, imageUrl, category_id, isFeatured, id]
   );
 
   return result.rows[0];
@@ -137,15 +191,21 @@ const getProductStockById = async (id) => {
   return result.rows[0];
 };
 
-const getRelatedProducts = async (category, productId) => {
-  const result = await pool.query(
-    `SELECT id, name, price, image_url, category
-     FROM products
-     WHERE category = $1 AND id != $2
-     ORDER BY RANDOM()
-     LIMIT 4`,
-    [category, productId]
-  );
+const getRelatedProducts = async (categoryName, productId) => {
+  const result = await pool.query(`
+    SELECT 
+      p.id,
+      p.name,
+      p.price,
+      p.image_url,
+      c.name AS category
+    FROM products p
+    JOIN categories c ON p.category_id = c.id
+    WHERE LOWER(c.name) = LOWER($1)
+      AND p.id != $2
+    ORDER BY RANDOM()
+    LIMIT 4
+  `, [categoryName, productId]);
 
   return result.rows;
 };
