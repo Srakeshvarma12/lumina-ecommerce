@@ -16,10 +16,12 @@ const AdminInventory = () => {
 
         if (!token) {
           setError("Session expired. Please login again.");
+          setLoading(false);
           return;
         }
 
         const res = await fetch("http://localhost:5000/api/admin/inventory", {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -27,14 +29,12 @@ const AdminInventory = () => {
         });
 
         if (res.status === 401) {
-          localStorage.removeItem("token");
           setError("Session expired. Please login again.");
+          setLoading(false);
           return;
         }
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch inventory");
-        }
+        if (!res.ok) throw new Error("Inventory fetch failed");
 
         const data = await res.json();
         setProducts(data.products || []);
@@ -69,11 +69,11 @@ const AdminInventory = () => {
         {loading && <p>Loading inventory...</p>}
 
         {error && (
-          <p className="text-red-600">
+          <p className="text-red-600 mt-4">
             {error}{" "}
             <span
+              className="underline cursor-pointer text-blue-600"
               onClick={() => navigate("/login")}
-              className="text-blue-600 underline cursor-pointer"
             >
               Go to Login
             </span>
@@ -81,7 +81,7 @@ const AdminInventory = () => {
         )}
 
         {!loading && !error && (
-          <div className="bg-white rounded-xl shadow overflow-x-auto">
+          <div className="bg-white rounded-xl shadow overflow-x-auto mt-4">
             <table className="w-full text-sm">
               <thead className="bg-gray-100">
                 <tr>

@@ -13,25 +13,29 @@ export const apiRequest = async (endpoint, options = {}) => {
     body: options.body ? options.body : undefined
   });
 
-  if (res.status === 401) {
-    localStorage.clear();
-    window.location.href = "/login";
-    return;
+  let data = null;
+
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
   }
 
-  const data = await res.json();
-
-  if (!res.ok) throw new Error(data.error || "Request failed");
+  if (!res.ok) {
+    const error = new Error(data?.error || "Request failed");
+    error.status = res.status;
+    throw error;
+  }
 
   return data;
 };
 
-/* 🔐 AUTH REQUEST */
+/* 🔐 AUTH */
 export const authRequest = async (endpoint, options = {}) => {
   return apiRequest(endpoint, options);
 };
 
-/* 🛡️ ADMIN REQUEST */
+/* 🛡️ ADMIN */
 export const adminRequest = async (endpoint, options = {}) => {
   return apiRequest(`/admin${endpoint}`, options);
 };
