@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import { useNavigate } from "react-router-dom";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -15,20 +14,34 @@ const AdminOrders = () => {
       try {
         const token = localStorage.getItem("token");
 
+        if (!token) {
+          setError("Unauthorized. Please login again.");
+          setLoading(false);
+          return;
+        }
+
         const res = await fetch("http://localhost:5000/api/admin/orders", {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          setError("Session expired. Please login again.");
+          setLoading(false);
+          return;
+        }
 
         if (!res.ok) {
           throw new Error("Failed to fetch admin orders");
         }
 
         const data = await res.json();
-        setOrders(data.orders || data);
+        setOrders(data.orders || []);
       } catch (err) {
-        console.error(err);
+        console.error("Admin orders error:", err);
         setError("Unable to load orders");
       } finally {
         setLoading(false);
@@ -47,14 +60,14 @@ const AdminOrders = () => {
         <p className="text-gray-600 mb-6">All customer orders</p>
 
         <button
-            onClick={() => navigate("/admin")}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back to Admin Dashboard
-          </button>
+          onClick={() => navigate("/admin")}
+          className="text-blue-600 hover:underline mb-6"
+        >
+          ← Back to Admin Dashboard
+        </button>
 
         {loading && <p>Loading orders...</p>}
-        {error && <p className="text-red-600">{error}</p>}
+        {error && <p className="text-red-600 font-medium">{error}</p>}
 
         {!loading && !error && (
           <div className="bg-white shadow rounded-xl overflow-x-auto">
@@ -72,17 +85,12 @@ const AdminOrders = () => {
 
               <tbody>
                 {orders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="border-t hover:bg-gray-50 transition"
-                  >
-                    {/* ✅ CLICKABLE ORDER */}
+                  <tr key={order.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 font-semibold text-blue-600 hover:underline">
                       <Link to={`/admin/orders/${order.id}`}>
                         #{order.id}
                       </Link>
                     </td>
-
                     <td className="p-4">{order.name}</td>
                     <td className="p-4">{order.email}</td>
                     <td className="p-4">₹{order.total_amount}</td>

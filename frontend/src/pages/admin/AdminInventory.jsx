@@ -5,19 +5,47 @@ import { useNavigate } from "react-router-dom";
 const AdminInventory = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
+
   useEffect(() => {
     const loadInventory = async () => {
-      const token = localStorage.getItem("token");
+      try {
+        const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/api/admin/inventory", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        if (!token) {
+          setError("Unauthorized. Please login again.");
+          setLoading(false);
+          return;
+        }
 
-      const data = await res.json();
-      setProducts(data.products || []);
-      setLoading(false);
+        const res = await fetch("http://localhost:5000/api/admin/inventory", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          setError("Session expired. Please login again.");
+          setLoading(false);
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch inventory");
+        }
+
+        const data = await res.json();
+        setProducts(data.products || []);
+      } catch (err) {
+        console.error("Inventory error:", err);
+        setError("Unable to load inventory");
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadInventory();
@@ -29,38 +57,53 @@ const AdminInventory = () => {
 
       <div className="min-h-screen bg-gray-50 px-10 py-10">
         <h1 className="text-3xl font-bold mb-2">Inventory</h1>
-        <p className="text-gray-600 mb-6">Live product stock after orders & refunds</p>
+        <p className="text-gray-600 mb-6">
+          Live product stock after orders & refunds
+        </p>
 
         <button
-            onClick={() => navigate("/admin")}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back to Admin Dashboard
-          </button>
+          onClick={() => navigate("/admin")}
+          className="text-blue-600 hover:underline mb-6"
+        >
+          ← Back to Admin Dashboard
+        </button>
 
-        {loading ? (
-          <p>Loading inventory...</p>
-        ) : (
+        {loading && <p>Loading inventory...</p>}
+        {error && <p className="text-red-600 font-medium">{error}</p>}
+
+        {!loading && !error && (
           <div className="bg-white rounded-xl shadow overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-4 text-left">Product</th>
-                  <th className="p-4">Price</th>
-                  <th className="p-4">Stock</th>
+                  <th className="p-4 text-center">Price</th>
+                  <th className="p-4 text-center">Stock</th>
                 </tr>
               </thead>
 
               <tbody>
-                {products.map(p => (
+                {products.map((p) => (
                   <tr key={p.id} className="border-t">
                     <td className="p-4">{p.name}</td>
                     <td className="p-4 text-center">₹{p.price}</td>
-                    <td className={`p-4 text-center font-semibold ${p.stock <= 5 ? "text-red-600" : "text-green-600"}`}>
+                    <td
+                      className={`p-4 text-center font-semibold ${
+                        p.stock <= 5 ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
                       {p.stock}
                     </td>
                   </tr>
                 ))}
+
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan="3" className="p-6 text-center text-gray-500">
+                      No products found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
