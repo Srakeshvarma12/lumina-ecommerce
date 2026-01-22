@@ -26,6 +26,6 @@ router.get("/inventory", protect, adminOnly, getInventoryController);
 router.get("/low-stock", protect, adminOnly, getLowStockProductsController);
 
 /* PRODUCTS */
-router.post("/products", protect, adminOnly, adminCreateProductController); // ✅ ADD PRODUCT
+router.post("/products", protect, adminOnly, adminCreateProductController);
 
 module.exports = router;
