@@ -15,8 +15,7 @@ const AdminInventory = () => {
         const token = localStorage.getItem("token");
 
         if (!token) {
-          setError("Unauthorized. Please login again.");
-          setLoading(false);
+          setError("Session expired. Please login again.");
           return;
         }
 
@@ -30,12 +29,11 @@ const AdminInventory = () => {
         if (res.status === 401 || res.status === 403) {
           localStorage.removeItem("token");
           setError("Session expired. Please login again.");
-          setLoading(false);
           return;
         }
 
         if (!res.ok) {
-          throw new Error("Failed to fetch inventory");
+          throw new Error("Failed to load inventory");
         }
 
         const data = await res.json();
@@ -63,13 +61,26 @@ const AdminInventory = () => {
 
         <button
           onClick={() => navigate("/admin")}
-          className="text-blue-600 hover:underline mb-6"
+          className="text-blue-600 hover:underline mb-4"
         >
           ← Back to Admin Dashboard
         </button>
 
         {loading && <p>Loading inventory...</p>}
-        {error && <p className="text-red-600 font-medium">{error}</p>}
+
+        {error && (
+          <div className="text-red-600">
+            {error}
+            <div>
+              <button
+                onClick={() => navigate("/login")}
+                className="mt-2 text-blue-600 underline"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        )}
 
         {!loading && !error && (
           <div className="bg-white rounded-xl shadow overflow-x-auto">
