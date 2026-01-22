@@ -171,26 +171,29 @@ const getProductByIdController = async (req, res) => {
   }
 };
 
-
-/* ==============================
-   📂 CATEGORIES
-================================ */
-
+/* ======================================================
+   📂 GET CATEGORIES (FROM PRODUCTS TABLE)
+====================================================== */
 const getCategoriesController = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, name
-      FROM categories
-      ORDER BY name
+      SELECT DISTINCT category
+      FROM products
+      WHERE category IS NOT NULL AND category <> ''
+      ORDER BY category ASC
     `);
 
-    res.json({ categories: result.rows });
+    // Convert [{category: "Shoes"}] → ["Shoes"]
+    const categories = result.rows.map(row => row.category);
 
-  } catch (err) {
-    console.error("Categories error:", err);
+    res.status(200).json({ categories });
+
+  } catch (error) {
+    console.error("Categories error:", error);
     res.status(500).json({ error: "Failed to fetch categories" });
   }
 };
+
 
 
 /* ==============================
