@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { authRequest } from "../../api/api";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -10,29 +11,19 @@ const AdminProducts = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        const res = await fetch("http://localhost:5000/api/products", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch products");
-
-        const data = await res.json();
-        setProducts(data.products || data); 
+        const data = await authRequest("/products");
+        setProducts(data.products || data);
       } catch (err) {
-        console.error(err);
-        setError("Failed to load products");
+        console.error("ADMIN PRODUCTS ERROR:", err);
+        setError(err.message || "Failed to load products");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    loadProducts();
   }, []);
 
   return (
@@ -44,10 +35,10 @@ const AdminProducts = () => {
         <p className="text-gray-600 mb-6">Inventory & stock management</p>
 
         <button
-            onClick={() => navigate("/admin")}
-            className="text-blue-600 hover:underline"
-          >
-            ← Back to Admin Dashboard
+          onClick={() => navigate("/admin")}
+          className="text-blue-600 hover:underline mb-4"
+        >
+          ← Back to Admin Dashboard
         </button>
 
         {loading && <p>Loading products...</p>}

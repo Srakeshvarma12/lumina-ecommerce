@@ -173,15 +173,14 @@ const Products = () => {
 
             <select
               value={category}
-              onChange={(e) =>
-                updateURL({ category: e.target.value })
-              }
+              onChange={(e) => updateURL({ category: e.target.value })}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
             >
               <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
+
+              {categories.map((cat, index) => (
+                <option key={index} value={cat}>
+                  {cat.replace(/-/g, " ").toUpperCase()}
                 </option>
               ))}
             </select>

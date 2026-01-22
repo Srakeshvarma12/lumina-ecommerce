@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { fetchInventory } from "../../api/admin";
 
 const AdminInventory = () => {
   const [products, setProducts] = useState([]);
@@ -12,35 +13,11 @@ const AdminInventory = () => {
   useEffect(() => {
     const loadInventory = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setError("Session expired. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch("http://localhost:5000/api/admin/inventory", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.status === 401) {
-          setError("Session expired. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        if (!res.ok) throw new Error("Inventory fetch failed");
-
-        const data = await res.json();
+        const data = await fetchInventory();
         setProducts(data.products || []);
       } catch (err) {
         console.error("INVENTORY ERROR:", err);
-        setError("Unable to load inventory");
+        setError(err.message || "Failed to load inventory");
       } finally {
         setLoading(false);
       }
@@ -67,18 +44,7 @@ const AdminInventory = () => {
         </button>
 
         {loading && <p>Loading inventory...</p>}
-
-        {error && (
-          <p className="text-red-600 mt-4">
-            {error}{" "}
-            <span
-              className="underline cursor-pointer text-blue-600"
-              onClick={() => navigate("/login")}
-            >
-              Go to Login
-            </span>
-          </p>
-        )}
+        {error && <p className="text-red-600">{error}</p>}
 
         {!loading && !error && (
           <div className="bg-white rounded-xl shadow overflow-x-auto mt-4">

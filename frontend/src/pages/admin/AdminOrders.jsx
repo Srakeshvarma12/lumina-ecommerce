@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
+import { fetchAllOrders } from "../../api/admin";
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -10,45 +11,19 @@ const AdminOrders = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const loadOrders = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          setError("Session expired. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch("http://localhost:5000/api/admin/orders", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (res.status === 401) {
-          setError("Session expired. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch admin orders");
-        }
-
-        const data = await res.json();
+        const data = await fetchAllOrders();
         setOrders(data.orders || []);
       } catch (err) {
         console.error("ADMIN ORDERS ERROR:", err);
-        setError("Unable to load orders");
+        setError(err.message || "Failed to load orders");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrders();
+    loadOrders();
   }, []);
 
   return (
@@ -70,13 +45,7 @@ const AdminOrders = () => {
 
         {error && (
           <p className="text-red-600 mt-4">
-            {error}{" "}
-            <span
-              className="underline cursor-pointer text-blue-600"
-              onClick={() => navigate("/login")}
-            >
-              Go to Login
-            </span>
+            {error}
           </p>
         )}
 

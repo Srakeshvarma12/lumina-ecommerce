@@ -1,4 +1,5 @@
-const BASE_URL = "https://lumina-ecommerce-tuil.onrender.com/api";
+const BASE_URL =
+  import.meta.env?.VITE_API_URL || "http://localhost:5000/api";
 
 export const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
@@ -10,32 +11,20 @@ export const apiRequest = async (endpoint, options = {}) => {
       ...(token && { Authorization: `Bearer ${token}` }),
       ...(options.headers || {})
     },
-    body: options.body ? options.body : undefined
+    body: options.body ? options.body : undefined // ✅ DO NOT stringify here
   });
 
-  let data = null;
-
-  try {
-    data = await res.json();
-  } catch {
-    data = null;
-  }
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const error = new Error(data?.error || "Request failed");
-    error.status = res.status;
-    throw error;
+    throw new Error(data.error || "Request failed");
   }
 
   return data;
 };
 
-/* 🔐 AUTH */
-export const authRequest = async (endpoint, options = {}) => {
-  return apiRequest(endpoint, options);
-};
+export const authRequest = (endpoint, options) =>
+  apiRequest(endpoint, options);
 
-/* 🛡️ ADMIN */
-export const adminRequest = async (endpoint, options = {}) => {
-  return apiRequest(`/admin${endpoint}`, options);
-};
+export const adminRequest = (endpoint, options) =>
+  apiRequest(`/admin${endpoint}`, options);
