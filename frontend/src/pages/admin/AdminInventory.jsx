@@ -26,20 +26,20 @@ const AdminInventory = () => {
           },
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           localStorage.removeItem("token");
           setError("Session expired. Please login again.");
           return;
         }
 
         if (!res.ok) {
-          throw new Error("Failed to load inventory");
+          throw new Error("Failed to fetch inventory");
         }
 
         const data = await res.json();
         setProducts(data.products || []);
       } catch (err) {
-        console.error("Inventory error:", err);
+        console.error("INVENTORY ERROR:", err);
         setError("Unable to load inventory");
       } finally {
         setLoading(false);
@@ -69,17 +69,15 @@ const AdminInventory = () => {
         {loading && <p>Loading inventory...</p>}
 
         {error && (
-          <div className="text-red-600">
-            {error}
-            <div>
-              <button
-                onClick={() => navigate("/login")}
-                className="mt-2 text-blue-600 underline"
-              >
-                Go to Login
-              </button>
-            </div>
-          </div>
+          <p className="text-red-600">
+            {error}{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="text-blue-600 underline cursor-pointer"
+            >
+              Go to Login
+            </span>
+          </p>
         )}
 
         {!loading && !error && (

@@ -26,20 +26,20 @@ const AdminOrders = () => {
           },
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 401) {
           localStorage.removeItem("token");
           setError("Session expired. Please login again.");
           return;
         }
 
         if (!res.ok) {
-          throw new Error("Failed to fetch admin orders");
+          throw new Error("Failed to fetch orders");
         }
 
         const data = await res.json();
         setOrders(data.orders || []);
       } catch (err) {
-        console.error("Admin orders error:", err);
+        console.error("ADMIN ORDERS ERROR:", err);
         setError("Unable to load orders");
       } finally {
         setLoading(false);
@@ -67,17 +67,15 @@ const AdminOrders = () => {
         {loading && <p>Loading orders...</p>}
 
         {error && (
-          <div className="text-red-600">
-            {error}
-            <div>
-              <button
-                onClick={() => navigate("/login")}
-                className="mt-2 text-blue-600 underline"
-              >
-                Go to Login
-              </button>
-            </div>
-          </div>
+          <p className="text-red-600">
+            {error}{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="text-blue-600 underline cursor-pointer"
+            >
+              Go to Login
+            </span>
+          </p>
         )}
 
         {!loading && !error && (
@@ -98,9 +96,7 @@ const AdminOrders = () => {
                 {orders.map((order) => (
                   <tr key={order.id} className="border-t hover:bg-gray-50">
                     <td className="p-4 font-semibold text-blue-600 hover:underline">
-                      <Link to={`/admin/orders/${order.id}`}>
-                        #{order.id}
-                      </Link>
+                      <Link to={`/admin/orders/${order.id}`}>#{order.id}</Link>
                     </td>
                     <td className="p-4">{order.name}</td>
                     <td className="p-4">{order.email}</td>
