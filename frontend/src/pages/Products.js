@@ -2,27 +2,23 @@ import React, { useEffect, useState } from "react";
 import { apiRequest } from "../api/api";
 import Navbar from "../components/Navbar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { addToWishlist } from "../api/wishlist";
+// import { addToWishlist } from "../api/wishlist";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [sort, setSort] = useState("");
-
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
 
   /* ================= URL → STATE ================= */
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-
     const q = params.get("search") || "";
     const cat = params.get("category") || "";
     const pr = params.get("price") || "";
@@ -37,89 +33,48 @@ const Products = () => {
   }, [location.search]);
 
   /* ================= INIT ================= */
-
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  /* ================= BACKEND ================= */
-
   const fetchCategories = async () => {
-    try {
-      const data = await apiRequest("/products/categories");
-      setCategories(data.categories || []);
-    } catch (err) {
-      console.error("Categories fetch failed", err);
-    }
+    const data = await apiRequest("/products/categories");
+    setCategories(data.categories || []);
   };
 
   const loadProducts = async ({ q, cat, pr, so }) => {
     try {
       setLoading(true);
-
       let url = "/products";
 
-      if (cat) {
-        url = `/products/category/${cat}`;
-      }
-
-      if (q) {
-        url = `/products/search?q=${q}`;
-      }
+      if (cat) url = `/products/category/${cat}`;
+      if (q) url = `/products/search?q=${q}`;
 
       const data = await apiRequest(url);
-
       let result = data.products || [];
 
-      /* ---------- PRICE FILTER ---------- */
-      if (pr === "low") {
-        result = result.filter(p => p.price < 1000);
-      }
-      if (pr === "mid") {
-        result = result.filter(p => p.price >= 1000 && p.price <= 10000);
-      }
-      if (pr === "high") {
-        result = result.filter(p => p.price > 10000);
-      }
+      if (pr === "low") result = result.filter(p => p.price < 1000);
+      if (pr === "mid") result = result.filter(p => p.price >= 1000 && p.price <= 10000);
+      if (pr === "high") result = result.filter(p => p.price > 10000);
 
-      /* ---------- SORTING ---------- */
-      if (so === "price_asc") {
-        result.sort((a, b) => a.price - b.price);
-      }
-
-      if (so === "price_desc") {
-        result.sort((a, b) => b.price - a.price);
-      }
-
-      if (so === "newest") {
-        result.sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
-      }
+      if (so === "price_asc") result.sort((a, b) => a.price - b.price);
+      if (so === "price_desc") result.sort((a, b) => b.price - a.price);
+      if (so === "newest")
+        result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
       setProducts(result);
-
-    } catch (err) {
-      console.error("Load failed", err);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ================= URL UPDATER ================= */
-
   const updateURL = (changes) => {
     const params = new URLSearchParams(location.search);
-
-    Object.entries(changes).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-      else params.delete(key);
-    });
-
+    Object.entries(changes).forEach(([k, v]) =>
+      v ? params.set(k, v) : params.delete(k)
+    );
     navigate(`/products?${params.toString()}`);
   };
-
-  /* ================= CART ================= */
 
   const addToCart = async (productId) => {
     try {
@@ -133,22 +88,18 @@ const Products = () => {
     }
   };
 
-  /* ================= WISHLIST ================= */
-  const handleWishlist = async (id) => {
-    await addToWishlist(id);
-    alert("Added to wishlist");
-  };
-
-  /* ================= UI ================= */
+  // const handleWishlist = async (id) => {
+  //   await addToWishlist(id);
+  //   alert("Added to wishlist");
+  // };
 
   return (
     <>
       <Navbar />
 
       <div className="bg-white min-h-screen">
-
         {/* HEADER */}
-        <div className="border-b border-gray-200">
+        <div className="border-b">
           <div className="container-store py-12">
             <h1 className="text-5xl font-bold mb-3">Products</h1>
             <p className="text-gray-500">
@@ -157,129 +108,113 @@ const Products = () => {
           </div>
         </div>
 
-        {/* FILTER BAR */}
-        <div className="border-b border-gray-100 bg-white">
-          <div className="container-store py-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* FILTERS */}
+        <div className="border-b bg-white">
+          <div className="container-store py-6">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-4 max-w-full overflow-hidden">
 
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={search}
-              onChange={(e) =>
-                updateURL({ search: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
-            />
+              <input
+                value={search}
+                onChange={(e) => updateURL({ search: e.target.value })}
+                placeholder="Search products..."
+                className="border rounded-xl px-4 py-3"
+              />
 
-            <select
-              value={category}
-              onChange={(e) => updateURL({ category: e.target.value })}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
-            >
-              <option value="">All Categories</option>
+              <select
+                value={category}
+                onChange={(e) => updateURL({ category: e.target.value })}
+                className="border rounded-xl px-4 py-3"
+              >
+                <option value="">All Categories</option>
+                {categories.map((c, i) => (
+                  <option key={i} value={c}>
+                    {c.replace(/-/g, " ").toUpperCase()}
+                  </option>
+                ))}
+              </select>
 
-              {categories.map((cat, index) => (
-                <option key={index} value={cat}>
-                  {cat.replace(/-/g, " ").toUpperCase()}
-                </option>
-              ))}
-            </select>
+              <select
+                value={price}
+                onChange={(e) => updateURL({ price: e.target.value })}
+                className="border rounded-xl px-4 py-3"
+              >
+                <option value="">All Prices</option>
+                <option value="low">Below ₹1,000</option>
+                <option value="mid">₹1,000 – ₹10,000</option>
+                <option value="high">Above ₹10,000</option>
+              </select>
 
-            <select
-              value={price}
-              onChange={(e) =>
-                updateURL({ price: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
-            >
-              <option value="">All Prices</option>
-              <option value="low">Below ₹1,000</option>
-              <option value="mid">₹1,000 – ₹10,000</option>
-              <option value="high">Above ₹10,000</option>
-            </select>
-
-            <select
-              value={sort}
-              onChange={(e) =>
-                updateURL({ sort: e.target.value })
-              }
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-black"
-            >
-              <option value="">Sort By</option>
-              <option value="newest">Newest</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-            </select>
-
+              <select
+                value={sort}
+                onChange={(e) => updateURL({ sort: e.target.value })}
+                className="border rounded-xl px-4 py-3"
+              >
+                <option value="">Sort By</option>
+                <option value="newest">Newest</option>
+                <option value="price_asc">Price: Low → High</option>
+                <option value="price_desc">Price: High → Low</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* GRID */}
         <div className="container-store py-14">
+          {loading && <p>Loading...</p>}
 
-          {loading && <p className="text-gray-500">Loading products...</p>}
-          {!loading && products.length === 0 && (
-            <p className="text-gray-500">No products found.</p>
-          )}
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 lg:gap-8">            {products.map((product) => (
+            <div
+              key={product.id}
+              className="group border border-gray-200 rounded-3xl overflow-hidden hover:shadow-lg transition bg-white flex flex-col"
+            >
+              <Link to={`/products/${product.id}`}>
+                <div className="aspect-square bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="max-h-full object-contain group-hover:scale-105 transition"
+                  />
+                </div>
+              </Link>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="group border border-gray-200 rounded-3xl overflow-hidden hover:shadow-lg transition bg-white"
-              >
-                <Link to={`/products/${product.id}`}>
-                  <div className="aspect-square bg-gray-50 flex items-center justify-center p-6">
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="max-h-full object-contain group-hover:scale-105 transition"
-                    />
-                  </div>
-                </Link>
+              {/* CONTENT */}
+              <div className="p-4 sm:p-5 flex flex-col flex-1">
+                <p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-400">
+                  {product.category}
+                </p>
 
-                <div className="p-5 space-y-2">
-                  <p className="text-xs uppercase tracking-wide text-gray-400">
-                    {product.category}
-                  </p>
+                <h3 className="font-semibold text-sm sm:text-lg line-clamp-2 min-h-[2.5rem]">
+                  {product.name}
+                </h3>
 
-                  <h3 className="font-semibold text-lg line-clamp-1">
-                    {product.name}
-                  </h3>
+                {/* PUSH BOTTOM */}
+                <div className="mt-auto">
+                  <span className="text-base sm:text-lg font-bold block mb-3">
+                    ₹ {product.price}
+                  </span>
 
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-lg font-bold">
-                      ₹ {product.price}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => addToCart(product.id)}
+                      className="flex-1 h-10 rounded-full border border-gray-300 hover:border-black hover:bg-gray-100 transition font-medium text-sm"
+                    >
+                      Add
+                    </button>
 
                     {/* <button
-                      onClick={() => addToCart(product.id)}
-                      className="text-sm font-medium px-4 py-2 rounded-full border border-black hover:bg-black hover:text-white transition"
-                    >
-                      Add
-                    </button> */}
-                    <button
-                      onClick={() => addToCart(product.id)}
-                      className="h-11 px-6 rounded-full border border-gray-300 hover:border-black hover:bg-gray-100 transition font-medium"
-                    >
-                      Add
-                    </button>
-
-                    <button
-                      onClick={() => handleWishlist(product.id)}
-                      className="h-11 w-11 flex items-center justify-center rounded-full border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition"
-                      title="Add to wishlist"
-                    >
-                      <span className="text-xl text-pink-500">❤️</span>
-
-
-                    </button>
+          onClick={() => handleWishlist(product.id)}
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-gray-300 hover:border-pink-500 hover:bg-pink-50 transition"
+          title="Add to wishlist"
+        >
+          <span className="text-lg text-pink-500">❤️</span>
+        </button> */}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
 
+          ))}
+          </div>
         </div>
       </div>
     </>

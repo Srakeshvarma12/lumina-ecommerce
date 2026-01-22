@@ -13,15 +13,9 @@ const Orders = () => {
   }, []);
 
   const fetchOrders = async () => {
-    try {
-      const data = await authRequest("/orders/history");
-      setOrders(data || []);   // ✅ your API returns array directly
-    } catch (err) {
-      console.error("Orders load error:", err);
-      alert("Failed to load orders");
-    } finally {
-      setLoading(false);
-    }
+    const data = await authRequest("/orders/history");
+    setOrders(data || []);
+    setLoading(false);
   };
 
   return (
@@ -29,62 +23,40 @@ const Orders = () => {
       <Navbar />
 
       <div className="min-h-screen bg-white">
-        <div className="max-w-6xl mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
 
-          {/* BACK */}
-          <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 mb-6 hover:underline"
-          >
+          <button onClick={() => navigate(-1)} className="text-blue-600 mb-6">
             ← Back
           </button>
 
-          <h1 className="text-4xl font-bold mb-2">My Orders</h1>
-          <p className="text-gray-500 mb-10">
-            Track your purchases and delivery details
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-1">My Orders</h1>
+          <p className="text-gray-500 mb-8">Track purchases and delivery</p>
 
           {loading && <p>Loading...</p>}
 
-          {!loading && orders.length === 0 && (
-            <p className="text-gray-500">You have not placed any orders yet.</p>
-          )}
-
-          <div className="space-y-5">
+          <div className="space-y-4">
             {orders.map(order => (
               <div
                 key={order.id}
-                className="border rounded-xl p-5 flex justify-between items-center hover:shadow-sm transition"
+                className="border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
               >
                 <div>
-                  <h2 className="font-semibold text-lg">
-                    Order #{order.id}
-                  </h2>
-
+                  <p className="font-semibold">Order #{order.id}</p>
                   <p className="text-sm text-gray-500">
                     {new Date(order.created_at).toLocaleString()}
                   </p>
-
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold
-                      ${order.status === "PAID" ? "bg-green-100 text-green-700" :
-                        order.status === "PLACED" ? "bg-yellow-100 text-yellow-700" :
-                        order.status === "REFUNDED" ? "bg-red-100 text-red-700" :
-                        "bg-gray-100 text-gray-700"}
-                    `}
-                  >
+                  <span className="inline-block mt-1 px-3 py-1 text-xs rounded-full bg-gray-100">
                     {order.status}
                   </span>
                 </div>
 
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="font-bold text-lg">₹{order.total_amount}</p>
-
                   <button
                     onClick={() => navigate(`/orders/${order.id}`)}
-                    className="text-indigo-600 text-sm mt-2 hover:underline"
+                    className="text-indigo-600 text-sm mt-1"
                   >
-                    View Details →
+                    View details →
                   </button>
                 </div>
               </div>

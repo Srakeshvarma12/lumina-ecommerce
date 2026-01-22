@@ -7,7 +7,6 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
 
-  // ✅ Address state
   const [address, setAddress] = useState({
     full_name: "",
     phone: "",
@@ -26,8 +25,7 @@ const Cart = () => {
     try {
       const res = await authRequest("/cart");
       setItems(res.cart.items || []);
-    } catch (e) {
-      console.error(e);
+    } catch {
       alert("Session expired. Please login again.");
     } finally {
       setLoading(false);
@@ -35,13 +33,8 @@ const Cart = () => {
   };
 
   const removeItem = async (productId) => {
-    try {
-      await authRequest(`/cart/${productId}`, { method: "DELETE" });
-      setItems(prev => prev.filter(i => i.product_id !== productId));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to remove item");
-    }
+    await authRequest(`/cart/${productId}`, { method: "DELETE" });
+    setItems((prev) => prev.filter((i) => i.product_id !== productId));
   };
 
   const total = items.reduce(
@@ -49,87 +42,51 @@ const Cart = () => {
     0
   );
 
-  // ✅ Handle input change
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setAddress({ ...address, [e.target.name]: e.target.value });
-  };
 
-  // ✅ Checkout
   const checkout = async () => {
     if (!items.length) return alert("Cart is empty");
 
     const { full_name, phone, address_line, city, state, pincode } = address;
-    if (!full_name || !phone || !address_line || !city || !state || !pincode) {
-      return alert("Please fill complete delivery address");
-    }
+    if (!full_name || !phone || !address_line || !city || !state || !pincode)
+      return alert("Fill complete delivery address");
 
     try {
       setProcessing(true);
 
-      // 🔥 SEND ADDRESS TO BACKEND
       const order = await authRequest("/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(address),
       });
 
       const payment = await authRequest("/payment/create-order", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: order.totalAmount,
-          orderId: order.orderId
-        })
+          orderId: order.orderId,
+        }),
       });
 
       const keyRes = await authRequest("/payment/key");
 
-      const options = {
+      new window.Razorpay({
         key: keyRes.key,
         amount: payment.amount,
         currency: "INR",
         name: "Lumina",
-        description: "Secure Checkout",
         order_id: payment.razorpayOrderId,
-
         handler: async function (response) {
           await authRequest("/payment/verify", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(response),
           });
-
           alert("Payment successful");
-
-          // ✅ clear cart UI
           setItems([]);
-
-          // ✅ clear address form
-          setAddress({
-            full_name: "",
-            phone: "",
-            address_line: "",
-            city: "",
-            state: "",
-            pincode: "",
-            country: "India",
-          });
-
-          setProcessing(false);
-
-          // ✅ optional (recommended)
-          // window.location.href = "/orders";
         },
-
-
         modal: { ondismiss: () => setProcessing(false) },
-        theme: { color: "#4f46e5" }
-      };
-
-      new window.Razorpay(options).open();
-
-    } catch (err) {
-      console.error(err);
+      }).open();
+    } catch {
       alert("Checkout failed");
       setProcessing(false);
     }
@@ -140,82 +97,73 @@ const Cart = () => {
       <Navbar />
 
       <div className="bg-white min-h-screen">
-        <div className="max-w-7xl mx-auto px-6 py-14">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Your Cart</h1>
-          <p className="text-gray-500">Review your order & delivery details</p>
-        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-1">Your Cart</h1>
+          <p className="text-gray-500 mb-8">Review items and checkout</p>
 
-        <div className="max-w-7xl mx-auto px-6 pb-20 grid grid-cols-1 lg:grid-cols-3 gap-10">
-
-          {/* CART */}
-          <div className="lg:col-span-2 space-y-6">
-            {items.map((i) => (
-              <div
-                key={i.product_id}
-                className="flex items-center justify-between gap-6 border p-5 rounded-xl"
-              >
-                {/* LEFT SIDE */}
-                <div className="flex items-center gap-5">
-                  {/* ✅ PRODUCT IMAGE */}
-                  <img
-                    src={i.image_url}
-                    alt={i.name}
-                    className="w-24 h-24 object-contain rounded-lg bg-white"
-                  />
-
-                  {/* TEXT */}
-                  <div>
-                    <h2 className="font-semibold text-lg">{i.name}</h2>
-                    <p className="text-sm text-gray-500">
-                      ₹{i.price} × {i.quantity}
-                    </p>
-
-                    <button
-                      onClick={() => removeItem(i.product_id)}
-                      className="text-red-500 text-sm mt-2 hover:underline"
-                    >
-                      Remove
-                    </button>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* CART ITEMS */}
+            <div className="lg:col-span-2 space-y-4">
+              {items.map((i) => (
+                <div
+                  key={i.product_id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 border rounded-xl p-4"
+                >
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src={i.image_url}
+                      alt={i.name}
+                      className="w-24 h-24 object-contain rounded-lg bg-gray-50"
+                    />
+                    <div>
+                      <p className="font-semibold">{i.name}</p>
+                      <p className="text-sm text-gray-500">
+                        ₹{i.price} × {i.quantity}
+                      </p>
+                      <button
+                        onClick={() => removeItem(i.product_id)}
+                        className="text-red-500 text-sm mt-1"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
+
+                  <p className="sm:ml-auto font-semibold text-lg">
+                    ₹{(i.price * i.quantity).toFixed(2)}
+                  </p>
                 </div>
-
-                {/* RIGHT SIDE */}
-                <p className="font-semibold text-lg">
-                  ₹{(i.price * i.quantity).toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* SUMMARY + ADDRESS */}
-          <div className="bg-gray-50 border rounded-2xl p-6 h-fit">
-
-            <h2 className="text-xl font-semibold mb-4">Delivery Address</h2>
-
-            {["full_name", "phone", "address_line", "city", "state", "pincode"].map((f) => (
-              <input
-                key={f}
-                name={f}
-                value={address[f]}
-                onChange={handleChange}
-                placeholder={f.replace("_", " ").toUpperCase()}
-                className="w-full mb-3 p-3 border rounded-lg"
-              />
-            ))}
-
-            <div className="flex justify-between text-lg font-semibold mt-4">
-              <span>Total</span>
-              <span>₹{total.toFixed(2)}</span>
+              ))}
             </div>
 
-            <button
-              disabled={processing}
-              onClick={checkout}
-              className="mt-5 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl"
-            >
-              {processing ? "Processing..." : "Place Order & Pay"}
-            </button>
+            {/* SUMMARY */}
+            <div className="bg-gray-50 border rounded-2xl p-5 space-y-3 h-fit">
+              <h2 className="text-lg font-semibold">Delivery Address</h2>
 
+              {["full_name", "phone", "address_line", "city", "state", "pincode"].map((f) => (
+                <input
+                  key={f}
+                  name={f}
+                  value={address[f]}
+                  onChange={handleChange}
+                  placeholder={f.replace("_", " ").toUpperCase()}
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                />
+              ))}
+
+              <div className="flex justify-between text-lg font-semibold pt-2">
+                <span>Total</span>
+                <span>₹{total.toFixed(2)}</span>
+              </div>
+
+              <button
+                disabled={processing}
+                onClick={checkout}
+                className="w-full bg-black text-white py-3 rounded-xl font-semibold"
+              >
+                {processing ? "Processing..." : "Place Order"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ const Home = () => {
   };
 
   const formatCategory = (cat) =>
-  String(cat).replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    String(cat).replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
   return (
     <>
@@ -39,30 +39,28 @@ const Home = () => {
 
       <div className="bg-white text-gray-900">
 
-        {/* ================= HERO ================= */}
-        <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
+        {/* HERO */}
+        <section className="max-w-7xl mx-auto px-5 sm:px-8 py-16 sm:py-24 grid lg:grid-cols-2 gap-12 items-center">
 
-          {/* LEFT */}
           <div>
-            <h1 className="text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-5">
               Your Daily Destination for Everything Quality.
             </h1>
 
-            <p className="text-gray-500 text-lg mb-10 max-w-lg">
+            <p className="text-gray-500 text-base sm:text-lg mb-8 max-w-xl">
               Curated collection of timeless products for modern living.
               Quality meets simplicity.
             </p>
 
             <Link
               to="/products"
-              className="inline-flex items-center gap-3 bg-black text-white px-8 py-4 rounded-xl hover:bg-gray-800 transition font-semibold"
+              className="inline-flex items-center gap-3 bg-black text-white px-7 py-4 rounded-xl hover:bg-gray-800 transition font-semibold"
             >
               Shop Now →
             </Link>
           </div>
 
-          {/* RIGHT */}
-          <div className="bg-gray-100 rounded-3xl overflow-hidden h-[520px] w-full">
+          <div className="bg-gray-100 rounded-3xl overflow-hidden w-full h-[260px] sm:h-[420px] lg:h-[520px]">
             <img
               src="/Lumina2.png"
               alt="Hero"
@@ -72,55 +70,59 @@ const Home = () => {
 
         </section>
 
-        {/* ================= CATEGORIES ================= */}
-        <section className="max-w-7xl mx-auto px-6 py-20 border-t">
+        {/* CATEGORIES */}
+        {/* <section className="max-w-7xl mx-auto px-5 sm:px-8 py-16 border-t">
 
-          <h2 className="text-3xl font-bold mb-12">Shop by Category</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-10">
+            Shop by Category
+          </h2>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 sm:gap-8">
             {categories.map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => navigate(`/products?category=${cat.name}`)}
-                className="cursor-pointer border rounded-2xl p-8 text-center hover:shadow-lg transition"
+                className="cursor-pointer border rounded-2xl p-6 sm:p-8 text-center hover:shadow-lg transition bg-white"
               >
-                <p className="font-semibold text-lg">
+                <p className="font-semibold text-sm sm:text-lg">
                   {formatCategory(cat.name)}
                 </p>
               </div>
             ))}
           </div>
 
-        </section>
+        </section> */}
 
-        {/* ================= LATEST ================= */}
-        <section className="max-w-7xl mx-auto px-6 py-24 border-t">
+        {/* LATEST */}
+        <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20 border-t">
 
-          <h2 className="text-3xl font-bold mb-12">Latest Arrivals</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-10">
+            Latest Arrivals
+          </h2>
 
           {loading && <p className="text-gray-400">Loading...</p>}
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-10">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-10">
             {latest.map((product) => (
               <Link
                 key={product.id}
                 to={`/products/${product.id}`}
-                className="group border rounded-3xl overflow-hidden hover:shadow-xl transition"
+                className="group border rounded-3xl overflow-hidden hover:shadow-xl transition bg-white"
               >
-                <div className="bg-gray-100 p-8">
+                <div className="bg-gray-100 p-5 sm:p-8">
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-52 object-contain group-hover:scale-105 transition"
+                    className="w-full h-36 sm:h-52 object-contain group-hover:scale-105 transition"
                   />
                 </div>
 
-                <div className="p-5 space-y-2">
+                <div className="p-4 sm:p-5 space-y-1">
                   <p className="text-xs uppercase tracking-wide text-gray-400">
                     {formatCategory(product.category)}
                   </p>
 
-                  <h3 className="font-semibold line-clamp-1">
+                  <h3 className="font-semibold line-clamp-1 text-sm sm:text-base">
                     {product.name}
                   </h3>
 
