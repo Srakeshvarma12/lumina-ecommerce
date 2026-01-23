@@ -7,6 +7,9 @@ Designed as a real-world full-stack project suitable for learning, scaling, and 
 
 ---
 
+🌐 https://lumina-ecommerce-beta.vercel.app/
+
+---
 ## 📌 Project Description
 
 Lumina is a modern e-commerce platform that demonstrates how a real online store is built from scratch — covering both customer-facing features and administrative operations.
