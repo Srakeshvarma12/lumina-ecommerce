@@ -80,7 +80,7 @@ This repository contains both the **frontend** and **backend** applications.
 
 ### Tools & Utilities
 - Git & GitHub  
-- Postman  
+- Thunder Client
 - ESLint  
 - VS Code  
 
