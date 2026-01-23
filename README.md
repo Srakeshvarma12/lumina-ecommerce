@@ -83,3 +83,10 @@ This repository contains both the **frontend** and **backend** applications.
 - Postman  
 - ESLint  
 - VS Code  
+
+### 👨‍💻 Author
+
+Rakesh Varma
+Full-Stack Developer
+
+🔗 LinkedIn: https://www.linkedin.com/in/sangaraju-rakesh-varma/
