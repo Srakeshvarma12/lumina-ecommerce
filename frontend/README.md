@@ -1,70 +1,82 @@
-# Getting Started with Create React App
+# 🛍️ Lumina E-Commerce Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack, production-ready e-commerce web application built with modern technologies.  
+Lumina provides a complete shopping experience including product browsing, cart & checkout, wishlist, order tracking, and an admin dashboard for store management.
 
-## Available Scripts
+Designed as a real-world full-stack project suitable for learning, scaling, and showcasing professional engineering practices.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 📌 Project Description
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Lumina is a modern e-commerce platform that demonstrates how a real online store is built from scratch — covering both customer-facing features and administrative operations.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The project focuses on:
 
-### `npm test`
+- Clean frontend architecture with React  
+- Secure REST APIs with Node.js & Express  
+- Relational database modeling using PostgreSQL  
+- Authentication, payments, and admin workflows  
+- Deployment-ready structure for real production environments
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+This repository contains both the **frontend** and **backend** applications.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## ✨ Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Customer Features
+- Product listing, search, filtering & sorting  
+- Product detail pages with related products  
+- Shopping cart management  
+- Secure checkout with Razorpay integration  
+- Wishlist functionality  
+- User authentication (JWT)  
+- Order history & order details  
+- Fully responsive design (mobile-first)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Admin Features
+- Admin dashboard with KPIs  
+- Manage products  
+- View and manage orders  
+- Refund processing  
+- Inventory overview  
 
-### `npm run eject`
+### Platform Features
+- RESTful API architecture  
+- Role-based access control  
+- Secure JWT authentication  
+- Modular and scalable project structure  
+- Production-ready deployment setup  
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+---
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🧰 Tech Stack
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Frontend
+- React.js  
+- React Router  
+- Tailwind CSS  
+- Axios / Fetch API  
+- Razorpay Checkout SDK  
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Backend
+- Node.js  
+- Express.js  
+- JWT Authentication  
+- RESTful API design  
 
-## Learn More
+### Database
+- PostgreSQL  
+- SQL schema design  
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### DevOps / Deployment
+- Vercel (Frontend)  
+- Render (Backend)  
+- Environment-based configuration  
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Tools & Utilities
+- Git & GitHub  
+- Postman  
+- ESLint  
+- VS Code  
