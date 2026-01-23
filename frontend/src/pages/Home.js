@@ -1,34 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { apiRequest } from "../api/api";
 import Navbar from "../components/Navbar";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const [latest, setLatest] = useState([]);
-  const [categories, setCategories] = useState([]);
+  // const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchHomeData();
-  }, []);
-
-  const fetchHomeData = async () => {
+  const fetchHomeData = useCallback(async () => {
     try {
-      const [latestRes, categoriesRes] = await Promise.all([
-        apiRequest("/products/latest"),
-        apiRequest("/products/categories"),
-      ]);
-
+      const latestRes = await apiRequest("/products/latest");
       setLatest(latestRes.products || []);
-      setCategories(categoriesRes.categories || []);
     } catch (err) {
       console.error("Home fetch error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchHomeData();
+  }, [fetchHomeData]);
 
   const formatCategory = (cat) =>
     String(cat).replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());

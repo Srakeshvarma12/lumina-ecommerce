@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import { authRequest } from "../api/api";
 
 const Cart = () => {
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+ 
   const [processing, setProcessing] = useState(false);
 
   const [address, setAddress] = useState({
@@ -17,20 +17,19 @@ const Cart = () => {
     country: "India",
   });
 
-  useEffect(() => {
-    loadCart();
-  }, []);
+  const loadCart = useCallback(async () => {
+  try {
+    const res = await authRequest("/cart");
+    setItems(res.cart.items || []);
+  } catch {
+    alert("Session expired. Please login again.");
+  }
+}, []);
 
-  const loadCart = async () => {
-    try {
-      const res = await authRequest("/cart");
-      setItems(res.cart.items || []);
-    } catch {
-      alert("Session expired. Please login again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+useEffect(() => {
+  loadCart();
+}, [loadCart]);
+
 
   const removeItem = async (productId) => {
     await authRequest(`/cart/${productId}`, { method: "DELETE" });

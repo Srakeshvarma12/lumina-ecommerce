@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 
@@ -8,36 +8,36 @@ const AdminOrderDetails = () => {
 
   const [order, setOrder] = useState(null);
   const [items, setItems] = useState([]);
-  const [address, setAddress] = useState(null); // ✅
+  const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refundLoading, setRefundLoading] = useState(false);
   const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin/orders/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/admin/orders/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       const data = await res.json();
-
       if (!res.ok) throw new Error(data.error);
 
       setOrder(data.order);
       setItems(data.items);
-      setAddress(data.address); // ✅
-    } catch (err) {
+      setAddress(data.address);
+    } catch {
       setError("Failed to load order");
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, token]);
 
   useEffect(() => {
     fetchOrder();
-  }, []);
+  }, [fetchOrder]);
 
   /* ---------------- REFUND ---------------- */
 
@@ -48,12 +48,10 @@ const AdminOrderDetails = () => {
       setRefundLoading(true);
 
       const res = await fetch(
-        `http://localhost:5000/api/refunds/${order.id}`,
+        `${process.env.REACT_APP_API_URL}/refunds/${order.id}`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
@@ -61,16 +59,13 @@ const AdminOrderDetails = () => {
       if (!res.ok) throw new Error(data.error);
 
       alert("✅ Order refunded successfully");
-      await fetchOrder();
-
+      fetchOrder();
     } catch (err) {
       alert(err.message || "Refund failed");
     } finally {
       setRefundLoading(false);
     }
   };
-
-  /* ---------------- UI ---------------- */
 
   if (loading) return <p className="p-10">Loading...</p>;
   if (error) return <p className="p-10 text-red-600">{error}</p>;

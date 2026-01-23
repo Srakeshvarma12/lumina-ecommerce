@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiRequest, authRequest } from "../api/api";
 import Navbar from "../components/Navbar";
@@ -13,12 +13,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [related, setRelated] = useState([]);
 
-  useEffect(() => {
-    fetchProduct();
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       const data = await apiRequest(`/products/${id}`);
       const prod = data.product || data;
@@ -35,7 +30,12 @@ const ProductDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchProduct();
+    window.scrollTo(0, 0);
+  }, [fetchProduct]);
 
   const handleWishlist = async (id) => {
     await addToWishlist(id);
