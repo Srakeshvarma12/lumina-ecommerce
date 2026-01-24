@@ -1,48 +1,10 @@
-const Razorpay = require("razorpay");
-const crypto = require("crypto");
-const pool = require("../config/db");
-const { sendPaymentSuccessMail } = require("../services/mail.service");
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
-exports.getKey = async (req, res) => {
-  res.json({ key: process.env.RAZORPAY_KEY_ID });
-};
-
-exports.createOrder = async (req, res) => {
-  try {
-    const { amount, orderId } = req.body;
-
-    const razorpayOrder = await razorpay.orders.create({
-      amount: Math.round(amount * 100),
-      currency: "INR",
-      receipt: `order_${orderId}`,
-    });
-
-    await pool.query(
-      `UPDATE orders SET razorpay_order_id = $1 WHERE id = $2`,
-      [razorpayOrder.id, orderId]
-    );
-
-    res.json({
-      razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-    });
-
-  } catch (err) {
-    console.error("RAZORPAY ERROR:", err);
-    res.status(500).json({ error: "Razorpay order failed" });
-  }
-};
-
 exports.verifyPayment = async (req, res) => {
   const client = await pool.connect();
 
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    /* ================= VERIFY SIGNATURE ================= */
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -57,8 +19,10 @@ exports.verifyPayment = async (req, res) => {
 
     await client.query("BEGIN");
 
+    /* ================= GET ORDER ================= */
+
     const orderRes = await client.query(
-      `SELECT o.id, o.status, o.total_amount, u.name, u.email
+      `SELECT o.id, o.user_id, o.total_amount, o.status, u.name, u.email
        FROM orders o
        JOIN users u ON u.id = o.user_id
        WHERE o.razorpay_order_id = $1
@@ -66,16 +30,62 @@ exports.verifyPayment = async (req, res) => {
       [razorpay_order_id]
     );
 
+    if (orderRes.rows.length === 0) {
+      throw new Error("Order not found");
+    }
+
     const order = orderRes.rows[0];
 
+    if (order.status === "PAID") {
+      await client.query("ROLLBACK");
+      return res.json({ success: true, message: "Already processed" });
+    }
+
+    /* ================= MARK ORDER PAID ================= */
+
     await client.query(
-      `UPDATE orders SET payment_id=$1, status='PAID' WHERE id=$2`,
+      `UPDATE orders 
+       SET payment_id=$1, status='PAID' 
+       WHERE id=$2`,
       [razorpay_payment_id, order.id]
+    );
+
+    /* ================= GET ORDER ITEMS ================= */
+
+    const itemsRes = await client.query(
+      `SELECT product_id, quantity 
+       FROM order_items 
+       WHERE order_id = $1`,
+      [order.id]
+    );
+
+    /* ================= UPDATE STOCK ================= */
+
+    for (const item of itemsRes.rows) {
+      const result = await client.query(
+        `UPDATE products
+         SET stock = stock - $1
+         WHERE id = $2 AND stock >= $1
+         RETURNING id`,
+        [item.quantity, item.product_id]
+      );
+
+      if (result.rowCount === 0) {
+        throw new Error("Insufficient stock for product " + item.product_id);
+      }
+    }
+
+    /* ================= CLEAR CART ================= */
+
+    await client.query(
+      `DELETE FROM cart_items WHERE user_id = $1`,
+      [order.user_id]
     );
 
     await client.query("COMMIT");
 
-    // ✅ SEND MAIL (NON BLOCKING)
+    /* ================= EMAIL (NON BLOCKING) ================= */
+
     sendPaymentSuccessMail(order, {
       id: order.id,
       total_amount: order.total_amount,
@@ -84,7 +94,7 @@ exports.verifyPayment = async (req, res) => {
       console.error("📧 Payment mail failed:", err.message);
     });
 
-    res.json({ success: true });
+    res.json({ success: true, message: "Payment verified & stock updated" });
 
   } catch (err) {
     await client.query("ROLLBACK");
